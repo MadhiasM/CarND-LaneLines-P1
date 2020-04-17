@@ -271,7 +271,7 @@ for idx, (file, img) in enumerate(drawn_images):
 
 # Create folder for image output
 if not os.path.isdir("test_images_output"):
-    os.mkdir(test_images_output)
+    os.mkdir("test_images_output")
 # Saving of images
 for file, img in drawn_images:
     # mpimg.imsave('test_images_output/' + file, img)
@@ -345,7 +345,7 @@ def process_image(image):
 
 
 # #### Writing Video files
-# Apply function to solidesWhiteright.mp4 and open file
+# Apply function to solidWhiteRight.mp4 and open file
 
 # In[11]:
 
@@ -376,16 +376,17 @@ HTML("""
 
 
 yellow_output = 'test_videos_output/solidYellowLeft.mp4'
+## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
+## To do so add .subclip(start_second,end_second) to the end of the line below
+## Where start_second and end_second are integer values representing the start and end of the subclip
+## You may also uncomment the following line for a subclip of the first 5 seconds
+##clip2 = VideoFileClip('test_videos/solidYellowLeft.mp4').subclip(0,5)
+clip2 = VideoFileClip('test_videos/solidYellowLeft.mp4')
+yellow_clip = clip2.fl_image(process_image)
+get_ipython().run_line_magic('time', 'yellow_clip.write_videofile(yellow_output, audio=False)')
 
-if not os.path.isdir("test_videos_output"):
-    os.mkdir("test_videos_output")
 
-clip1 = VideoFileClip("test_videos/solidYellowLeft.mp4")
-yellow_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
-get_ipython().run_line_magic('time', 'white_clip.write_videofile(white_output, audio=False)')
-
-
-# In[15]:
+# In[14]:
 
 
 HTML("""
