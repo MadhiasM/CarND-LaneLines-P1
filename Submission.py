@@ -46,6 +46,8 @@ os.listdir("test_images/")
 # In[4]:
 
 
+# Most of there functions were already defined, the draw_lines functions was improved
+
 import math
 
 def grayscale(img):
@@ -55,8 +57,6 @@ def grayscale(img):
     (assuming your grayscaled image is called 'gray')
     you should call plt.imshow(gray, cmap='gray')"""
     return cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    # Or use BGR2GRAY if you read an image with cv2.imread()
-    # return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
 def canny(img, low_threshold, high_threshold):
     """Applies the Canny transform"""
@@ -93,35 +93,22 @@ def region_of_interest(img, vertices):
 
 
 def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
-    """
-    NOTE: this is the function you might want to use as a starting point once you want to 
-    average/extrapolate the line segments you detect to map out the full
-    extent of the lane (going from the result shown in raw-lines-example.mp4
-    to that shown in P1_example.mp4).  
-    
-    Think about things like separating line segments by their 
-    slope ((y2-y1)/(x2-x1)) to decide which segments are part of the left
-    line vs. the right line.  Then, you can average the position of each of 
-    the lines and extrapolate to the top and bottom of the lane.
-    
-    This function draws `lines` with `color` and `thickness`.    
-    Lines are drawn on the image inplace (mutates the image).
-    If you want to make the lines semi-transparent, think about combining
-    this function with the weighted_img() function below
-    """
-    
+
+
+    # Declaring variables
     x_l = []
     y_l = []
     
     x_r = []
     y_r = []
     
-    shape = img.shape
+    # Returning number if dimensions
+    split = img.shape
 
-    #Seperate image in to left and right side for each lane marking
+    # For each lane marking seperate image in to left and right side
     for line in lines:
         for x1,y1,x2,y2 in line:
-            if x1< shape[1]/2 and x2< shape[1]/2:
+            if x1< split[1]/2 and x2< split[1]/2:
                 # left side 
                 x_l += [x1, x2]
                 y_l += [y1, y2]
@@ -131,20 +118,20 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
                 y_r += [y1, y2]
             
     if len(x_l) != 0 and len(y_l) != 0:
-        # Calculating average slope and b from all the points on left - slope of left lane markings is negative
+        # Average slope m and y-intercept b on the left - slope of left lane markings is negative
         m,b = np.polyfit(x_l, y_l, 1)
         min_x = min(x_l)
         max_x = max(x_l)
-        # Plotting line from x1=(y_max-b)/m, y1=y_max to x2=x_max, y2=m*x_max + b
-        cv2.line(img, (int((shape[0]-b)/m), shape[0]), (max_x, int(max_x * m + b)), color, thickness)
+        # Intepolating between x1=(y_max-b)/m, y1=y_max to x2=x_max, y2=m*x_max + b
+        cv2.line(img, (int((split[0]-b)/m), split[0]), (max_x, int(max_x * m + b)), color, thickness)
 
     if len(x_r) != 0 and len(y_r) != 0:
-        # Calculating average slope and b from all the points on right - slope of right lane markings is positive
+        # Average slope m and y-intercept b on the left - slope of right lane markings is positive
         m,b = np.polyfit(x_r, y_r, 1)
         min_x = min(x_r)
         max_x = max(x_r)
-        # Plotting line from x1=x_min, y1=(x_min*m)+b to x2=(y_max-b)/m, y2=y_max
-        cv2.line(img, (min_x, int(min_x * m + b)), (int((shape[0]-b)/m), shape[0]), color, thickness)
+        # Interpolating between x1=x_min, y1=(x_min*m)+b to x2=(y_max-b)/m, y2=y_max
+        cv2.line(img, (min_x, int(min_x * m + b)), (int((split[0]-b)/m), split[0]), color, thickness)
 
     for line in lines:
         # Iterate over all lines
@@ -161,8 +148,6 @@ def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
     line_img = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
     draw_lines(line_img, lines)
     return line_img
-
-# Python 3 has support for cool math symbols.
 
 def weighted_img(img, initial_img, α=0.8, β=1., γ=0.):
     """
@@ -259,9 +244,9 @@ drawn_images = [
 ]
 
 # Plot processed images in a subplot
-f, axs = plt.subplots(3, 2, figsize=(20, 20))
-for idx, (file, img) in enumerate(drawn_images):
-    axs[idx//2, idx % 2].imshow(img)
+f, axes = plt.subplots(3, 2, figsize=(20, 20))
+for index, (file, img) in enumerate(drawn_images):
+    axes[index//2, index % 2].imshow(img)
 
 
 # #### 4. Saving of images in folder 'test_images_output'
@@ -272,10 +257,9 @@ for idx, (file, img) in enumerate(drawn_images):
 # Create folder for image output
 if not os.path.isdir("test_images_output"):
     os.mkdir("test_images_output")
+    
 # Saving of images
 for file, img in drawn_images:
-    # mpimg.imsave('test_images_output/' + file, img)
-    # above line gives me broken images, don't know why and just use cv2.imwrite
     cv2.imwrite('test_images_output/' + file, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 
 
@@ -302,44 +286,45 @@ from IPython.display import HTML
 # In[10]:
 
 
+# Method of image processing did not work here, therefor there variables are defined within the function, maybe could be done more elegantly
 def process_image(image):
     color_select= np.copy(image)
     line_image= np.copy(image)
     
-    gray = grayscale(color_select)
+    # Grayscale image
+    gray_image = grayscale(color_select)
     
     ysize = image.shape[0]
     xsize = image.shape[1]
     
-    # Define a kernel size and apply Gaussian smoothing
+    # Apply Gaussian smoothing
     kernel_size = 5
-    blur_gray = gaussian_blur(gray,kernel_size)
+    blur_gray = gaussian_blur(gray_image, kernel_size)
 
-    # Define our parameters for Canny and apply
+    # Apply Canny Edge
     low_threshold = 50
     high_threshold = 150
-    edges = canny(blur_gray, low_threshold, high_threshold)
+    edges_image = canny(blur_gray, low_threshold, high_threshold)
 
-    # This time we are defining a four sided polygon to mask
+    # Create masking polygon
     imshape = color_select.shape
-    vertices = np.array([[(50,imshape[0]),(450, 320), (500, 320), (imshape[1],imshape[0])]], dtype=np.int32)
-    masked_edges = region_of_interest(edges, vertices)
+    vertices = np.array([[(50,imshape[0]),(445, 325), (500, 325), (imshape[1],imshape[0])]], dtype=np.int32)
+    masked_edges_image = region_of_interest(edges_image, vertices)
 
-    # Define the Hough transform parameters
-    # Make a blank the same size as our image to draw on
-    rho = 2 # distance resolution in pixels of the Hough grid
-    theta = np.pi/180 # angular resolution in radians of the Hough grid
-    threshold = 25     # minimum number of votes (intersections in Hough grid cell)
-    min_line_length = 20 #minimum number of pixels making up a line
-    max_line_gap = 100    # maximum gap in pixels between connectable line segments
-    line_image = np.copy(image)*0 # creating a blank to draw lines on
+    # Apply Hough Transform
+    rho = 2 # Distance resolution in pixels of the Hough grid
+    theta = np.pi/180 # Angular resolution in radians of the Hough grid
+    threshold = 25     # Minimum number of votes (intersections in Hough grid cell)
+    min_line_length = 20 # Minimum number of pixels making up a line
+    max_line_gap = 100    # Maximum gap in pixels between connectable line segments
+    line_image = np.copy(image)*0 # Creating a blank to draw lines on
 
-    #draw_lines(line_image, lines, color=[255, 0, 0], thickness=2)
+    # Draw Lines
     
-    line_image = hough_lines(masked_edges, rho, theta, threshold, min_line_length, max_line_gap)
+    line_image = hough_lines(masked_edges_image, rho, theta, threshold, min_line_length, max_line_gap)
 
     # Create a "color" binary image to combine with line image
-    color_edges = np.dstack((edges, edges, edges)) 
+    color_edges = np.dstack((edges_image, edges_image, edges_image)) 
     
     return weighted_img(line_image,image)
 
@@ -352,11 +337,12 @@ def process_image(image):
 
 white_output = 'test_videos_output/solidWhiteRight.mp4'
 
+# Create test video output directory, if not existent
 if not os.path.isdir("test_videos_output"):
     os.mkdir("test_videos_output")
 
 clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4")
-white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
+white_clip = clip1.fl_image(process_image)
 get_ipython().run_line_magic('time', 'white_clip.write_videofile(white_output, audio=False)')
 
 
@@ -376,11 +362,6 @@ HTML("""
 
 
 yellow_output = 'test_videos_output/solidYellowLeft.mp4'
-## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
-## To do so add .subclip(start_second,end_second) to the end of the line below
-## Where start_second and end_second are integer values representing the start and end of the subclip
-## You may also uncomment the following line for a subclip of the first 5 seconds
-##clip2 = VideoFileClip('test_videos/solidYellowLeft.mp4').subclip(0,5)
 clip2 = VideoFileClip('test_videos/solidYellowLeft.mp4')
 yellow_clip = clip2.fl_image(process_image)
 get_ipython().run_line_magic('time', 'yellow_clip.write_videofile(yellow_output, audio=False)')
