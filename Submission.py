@@ -385,7 +385,7 @@ yellow_clip = clip1.fl_image(process_image) #NOTE: this function expects color i
 get_ipython().run_line_magic('time', 'white_clip.write_videofile(white_output, audio=False)')
 
 
-# In[14]:
+# In[15]:
 
 
 HTML("""
@@ -394,3 +394,16 @@ HTML("""
 </video>
 """.format(yellow_output))
 
+
+# # Discussion
+# 
+# ## Potential Shortcomings
+# 
+# The current algorithm is not applicable to a variety of cases such as curves or not centered lane markings.
+# The position of the street horizon is fixed, which may not be usabe for slopes (up and down).
+# Moreover it is prone to identifying noise as lane markings and therefor making unusable results for some cases.
+# 
+# ## Possible Improvements
+# 
+# In a real world scenario, car sensors such as steering angle, translational and rotational acceleration and GPS data could be used to get more information about the shape of the road ahead. This could for instance give data about the slope (GPS) or curvature (steering) ahead. The masking could be adjusted to shift the upper edge according the the slope (up/down) or curve (left/right).
+# An imporved model could consider specific color ranges only for the lane markings (white, yellow, ...) additional to the edge detection. By that, noise such as trees, other cars or cracks in the street would not be considered as lane markings/lines.
